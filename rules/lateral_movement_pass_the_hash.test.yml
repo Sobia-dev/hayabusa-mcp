@@ -1,0 +1,46 @@
+title: Test cases for lateral_movement_pass_the_hash.yml
+rule: 12fa1530-030c-4359-8b9c-89565c6914ed
+tests:
+    - name: positive_ntlm_empty_keylength
+      description: Network logon over NTLM with KeyLength 0 and NtLmSsp logon process, characteristic of Pass-the-Hash.
+      log:
+          EventID: 4624
+          LogonType: 3
+          AuthenticationPackageName: 'NTLM'
+          LogonProcessName: 'NtLmSsp'
+          KeyLength: 0
+          TargetUserName: 'jdoe'
+      expected_match: true
+
+    - name: negative_anonymous_logon_filtered
+      description: Same NTLM pattern but for the built-in ANONYMOUS LOGON account, which is allow-listed.
+      log:
+          EventID: 4624
+          LogonType: 3
+          AuthenticationPackageName: 'NTLM'
+          LogonProcessName: 'NtLmSsp'
+          KeyLength: 0
+          TargetUserName: 'ANONYMOUS LOGON'
+      expected_match: false
+
+    - name: negative_nonzero_keylength
+      description: NTLM logon with a real session key length must not match.
+      log:
+          EventID: 4624
+          LogonType: 3
+          AuthenticationPackageName: 'NTLM'
+          LogonProcessName: 'NtLmSsp'
+          KeyLength: 128
+          TargetUserName: 'jdoe'
+      expected_match: false
+
+    - name: negative_kerberos_package
+      description: Kerberos (not NTLM) authentication package must not match.
+      log:
+          EventID: 4624
+          LogonType: 3
+          AuthenticationPackageName: 'Kerberos'
+          LogonProcessName: 'Kerberos'
+          KeyLength: 0
+          TargetUserName: 'jdoe'
+      expected_match: false

@@ -1,0 +1,46 @@
+title: Test cases for lateral_movement_psexec.yml
+rule: 854ea8ae-dd24-446f-b8e9-19615774a02b
+tests:
+    - name: positive_default_psexecsvc_name_and_path
+      description: Standard PsExec run - default service name and default install path.
+      log:
+          EventID: 7045
+          Channel: System
+          Provider_Name: Service Control Manager
+          ServiceName: PSEXESVC
+          ImagePath: 'C:\Windows\PSEXESVC.exe'
+          StartType: demand start
+          AccountName: LocalSystem
+      expected_match: true
+
+    - name: positive_renamed_binary_default_service_name
+      description: Attacker renames the dropped binary but PsExec still registers it as PSEXESVC.
+      log:
+          EventID: 7045
+          ServiceName: PSEXESVC
+          ImagePath: 'C:\Windows\update_helper_9f2.exe'
+      expected_match: true
+
+    - name: positive_image_path_only_match
+      description: Service registered under a different name but the image path still references PSEXESVC.
+      log:
+          EventID: 7045
+          ServiceName: RemoteAdminSvc
+          ImagePath: '%SystemRoot%\PSEXESVC.exe'
+      expected_match: true
+
+    - name: negative_unrelated_service_install
+      description: Legitimate, unrelated service install must not match.
+      log:
+          EventID: 7045
+          ServiceName: WinDefend
+          ImagePath: 'C:\Program Files\Windows Defender\MsMpEng.exe'
+      expected_match: false
+
+    - name: negative_wrong_event_id
+      description: Same service/image values but wrong EventID must not match.
+      log:
+          EventID: 7036
+          ServiceName: PSEXESVC
+          ImagePath: 'C:\Windows\PSEXESVC.exe'
+      expected_match: false

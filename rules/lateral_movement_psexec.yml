@@ -1,0 +1,41 @@
+title: PsExec-Based Lateral Movement via PSEXESVC Service Installation
+id: 854ea8ae-dd24-446f-b8e9-19615774a02b
+status: experimental
+description: |
+    Detects installation of the PsExec remote-execution service (PSEXESVC) via
+    Windows Service Control Manager Event ID 7045, the default name Sysinternals
+    PsExec (and PsExec-compatible tools such as Impacket's psexec.py) registers
+    when it copies itself to a target over an admin share (ADMIN$) and starts as
+    a service to execute commands remotely.
+
+    Severity is high because PSEXESVC is not a legitimate persistent Windows
+    service - a 7045 event naming it corresponds almost exclusively to an active
+    PsExec session, and this technique is one of the most common vectors for
+    interactive lateral movement in post-compromise activity.
+references:
+    - https://attack.mitre.org/techniques/T1569/002/
+    - https://attack.mitre.org/techniques/T1021/002/
+    - https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
+author: hayabusa-detection-kb
+date: 2026-08-01
+tags:
+    - attack.lateral-movement
+    - attack.execution
+    - attack.t1021.002
+    - attack.t1569.002
+logsource:
+    product: windows
+    service: system
+    definition: 'Requires the default-enabled Service Control Manager auditing, Event ID 7045 (service installed)'
+detection:
+    selection_service_name:
+        EventID: 7045
+        ServiceName: 'PSEXESVC'
+    selection_image_path:
+        EventID: 7045
+        ImagePath|contains: 'PSEXESVC'
+    condition: selection_service_name or selection_image_path
+falsepositives:
+    - Legitimate administrative use of Sysinternals PsExec by IT staff or scripted deployment/patching tooling
+    - Security or EDR products that use PsExec-compatible remote execution during authorized scans or response actions
+level: high

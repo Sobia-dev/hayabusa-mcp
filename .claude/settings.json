@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(C:\\Windows\\**)",
+      "Edit(C:\\Windows\\**)",
+      "Read(~/Documents/**)",
+      "Edit(~/Documents/**)",
+      "Read(~/Desktop/**)",
+      "Edit(~/Desktop/**)",
+      "Read(~/Downloads/**)",
+      "Edit(~/Downloads/**)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $n = New-Object System.Windows.Forms.NotifyIcon; $n.Icon = [System.Drawing.SystemIcons]::Information; $n.Visible = $true; $n.ShowBalloonTip(3000, 'Claude Code', 'Claude finished', [System.Windows.Forms.ToolTipIcon]::Info); Start-Sleep -Seconds 4; $n.Dispose()"
+          }
+        ]
+      }
+    ]
+  }
+}
